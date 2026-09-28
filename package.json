@@ -1,0 +1,18 @@
+{
+  "name": "obsimo-rider",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "20.x"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "node build.mjs --no-pdf && npx --yes serve dist"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^131.0.0",
+    "marked": "^14.1.0",
+    "playwright-core": "^1.49.0",
+    "three": "^0.169.0"
+  }
+}

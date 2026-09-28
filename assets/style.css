@@ -1,0 +1,212 @@
+:root {
+  --ink: #111;
+  --muted: #6b6b6b;
+  --line: #e4e2dd;
+  --paper: #faf9f6;
+  --eco: #3f7d3a;
+  --eco-bg: #eef5ec;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font: 17px/1.55 "Helvetica Neue", Helvetica, Arial, system-ui, sans-serif;
+}
+
+/* Barre du haut : langues + PDF */
+.bar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  background: rgba(250, 249, 246, 0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.langs { display: flex; gap: 4px; }
+.langs a, .langs strong {
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  color: var(--ink);
+}
+.langs strong { background: var(--ink); color: var(--paper); }
+.langs a:hover { background: var(--line); }
+.dl {
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dl:hover { background: #333; }
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 16px 80px;
+}
+
+/* Couverture */
+.cover { text-align: center; margin-bottom: 40px; }
+.kicker { margin: 0 0 12px; font-weight: 700; font-size: 18px; }
+.cover h1 { margin: 0; }
+.cover h1 img { width: min(560px, 100%); height: auto; display: block; margin: 0 auto; }
+.updated { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
+
+/* Sections numérotées comme sur le rider papier */
+.rider { counter-reset: section; }
+h2 {
+  margin: 40px 0 12px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font-size: 21px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  break-after: avoid;
+}
+.rider h2::before {
+  counter-increment: section;
+  content: counter(section) ". ";
+}
+
+.tech-title {
+  margin: 64px 0 24px;
+  font-size: 22px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+p { margin: 0 0 12px; }
+ul { margin: 0 0 12px; padding-left: 22px; }
+li { margin: 4px 0; }
+li ul { margin: 4px 0; }
+em { color: var(--muted); }
+a { color: inherit; text-decoration-color: #aaa; text-underline-offset: 3px; }
+a[href^="tel:"], a[href^="mailto:"] { white-space: nowrap; }
+
+/* Blockquote = note éco (en vert, comme l'original) */
+blockquote {
+  margin: 16px 0;
+  padding: 10px 14px;
+  border-left: 3px solid var(--eco);
+  background: var(--eco-bg);
+  color: var(--eco);
+  font-style: italic;
+  border-radius: 0 6px 6px 0;
+}
+blockquote p { margin: 0; }
+
+img { max-width: 100%; height: auto; }
+.tech p:has(> img) { margin: 0 0 24px; text-align: center; }
+.tech img {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+.tech img[src$="lumiere.jpg"] { max-height: 520px; width: auto; }
+
+/* Stage plot 3D */
+.stage { margin: 0 0 28px; }
+.stage.has3d .stage-fallback { display: none; }
+.stage3d {
+  position: relative;
+  height: clamp(340px, 62vw, 480px);
+  border-radius: 10px;
+  overflow: hidden;
+  background: #0d0d0f;
+}
+.stage3d canvas { display: block; width: 100%; height: 100%; cursor: grab; }
+.stage3d canvas:active { cursor: grabbing; }
+.s3-labels { position: absolute; inset: 0; pointer-events: none; }
+.s3-label {
+  color: #ff7a45;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.25;
+  text-shadow: 0 1px 3px #000, 0 0 8px #000;
+  white-space: nowrap;
+}
+.s3-label small {
+  display: block;
+  font-weight: 500;
+  font-size: 10px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #d9d9d9;
+}
+.s3-strong { color: #fff; }
+@media (max-width: 560px) {
+  .stage3d { height: 460px; margin: 0 -16px; border-radius: 0; }
+  .s3-label { font-size: 10px; }
+  .s3-label small { display: none; } /* les dimensions sont dans la liste juste en dessous */
+}
+.s3-audience { color: #8a8a8a; font-size: 12px; letter-spacing: 0.3em; }
+.s3-views {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+}
+.s3-views button {
+  border: 0;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background: transparent;
+  color: #ddd;
+  font: 600 12px/1 inherit;
+  font-family: inherit;
+  cursor: pointer;
+}
+.s3-views button[aria-pressed="true"] { background: #fff; color: #111; }
+.s3-hint {
+  position: absolute;
+  left: 12px;
+  bottom: 8px;
+  z-index: 2;
+  margin: 0;
+  font-size: 12px;
+  color: #8a8a8a;
+  pointer-events: none;
+}
+
+/* Impression / PDF */
+@page { size: A4; }
+@media print {
+  body { background: #fff; font-size: 11.5pt; }
+  .bar, .stage3d { display: none !important; }
+  .stage.has3d .stage-fallback { display: inline; }
+  main { max-width: none; padding: 0; }
+  .cover { margin-bottom: 24px; }
+  .cover h1 img { width: 70%; }
+  h2 { margin-top: 24px; padding-top: 12px; }
+  .tech { break-before: page; }
+  .tech-title { margin-top: 0; }
+  .tech h2:last-of-type { break-before: page; } /* la reco lumière (dernière section) sur sa propre page */
+  .tech img[src$="lumiere.jpg"] { max-height: 110mm; }
+  h2 + *, li, img, blockquote { break-inside: avoid; }
+  a { text-decoration: none; }
+}
