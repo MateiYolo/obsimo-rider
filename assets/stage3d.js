@@ -4,13 +4,15 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
+// rot = rotation en radians (Math.PI / 2 = quart de tour).
+// Les 2 flightcases forment un L : le n°2 face au public, le n°1 en coude sur le côté du musicien.
 const LAYOUT = {
-  flightcase1: { x: -0.95, z: 0, w: 1.1, h: 1.0, d: 0.6 },
+  flightcase1: { x: -0.4, z: -0.25, rot: Math.PI / 2, w: 1.1, h: 1.0, d: 0.6, labelDx: -0.35, labelDz: -0.35 },
   flightcase2: { x: 0.25, z: 0, w: 0.7, h: 1.0, d: 0.6 },
-  musician: { x: 0.25, z: -0.65 },
-  guitar: { x: 1.25, z: -0.25 },
-  di: { x: -1.95, z: -0.1 },
-  power: { x: -1.9, z: 0.2 },
+  musician: { x: 0.2, z: -0.72 },
+  guitar: { x: 1.2, z: -0.45, rot: -0.35 },
+  di: { x: -1.3, z: -0.6 },
+  power: { x: -1.2, z: -0.05, rot: Math.PI / 2 },
   wedge1: { x: -1.2, z: 1.35 },
   wedge2: { x: 1.55, z: 1.25 },
 };
@@ -47,7 +49,7 @@ const LABELS = {
 };
 
 const VIEWS = {
-  free: { pos: [3.2, 3.0, 5.2], target: [0, 0.6, 0.2] },
+  free: { pos: [2.6, 4.5, 5.3], target: [-0.1, 0.4, 0.3] },
   front: { pos: [0, 1.5, 6.2], target: [0, 0.8, 0.2] },
   top: { pos: [0, 7.2, 0.35], target: [0, 0, 0.3] },
 };
@@ -142,37 +144,96 @@ function musician() {
 }
 
 function guitar() {
+  // Guitare électrique type Strat sur stand
   const g = new THREE.Group();
-  // Stand
-  const legGeo = new THREE.CylinderGeometry(0.012, 0.012, 0.42, 6);
-  for (const a of [0, (2 * Math.PI) / 3, (4 * Math.PI) / 3]) {
-    const leg = new THREE.Mesh(legGeo, M.gear);
-    leg.position.set(Math.sin(a) * 0.1, 0.18, Math.cos(a) * 0.1 - 0.05);
-    leg.rotation.set(Math.cos(a) * 0.5, 0, -Math.sin(a) * 0.5);
+  const stand = mat(0x1a1a1a, { roughness: 0.6 });
+  const legGeo = new THREE.CylinderGeometry(0.01, 0.01, 0.34, 6);
+  for (const s of [-1, 1]) {
+    const leg = new THREE.Mesh(legGeo, stand); // pieds avant
+    leg.position.set(s * 0.1, 0.15, 0.06);
+    leg.rotation.set(0.35, 0, s * 0.35);
     g.add(leg);
   }
-  const post = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.9, 6), M.gear);
-  post.position.set(0, 0.6, -0.08);
-  g.add(post);
-  // Guitare (légèrement inclinée vers l'arrière)
+  const back = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.85, 6), stand);
+  back.position.set(0, 0.42, -0.12);
+  back.rotation.x = -0.12;
+  g.add(back);
+  const cradle = box(0.26, 0.02, 0.08, stand);
+  cradle.position.set(0, 0.28, 0.02);
+  g.add(cradle);
+
   const gt = new THREE.Group();
-  const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.19, 0.05, 28), M.sunburst);
-  lower.rotation.x = Math.PI / 2;
-  lower.position.y = 0.3;
-  const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.05, 28), M.sunburst);
-  upper.rotation.x = Math.PI / 2;
-  upper.position.y = 0.52;
-  const guard = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.052, 24), mat(0xf2efe8));
-  guard.rotation.x = Math.PI / 2;
-  guard.position.set(0.05, 0.36, 0.001);
-  const neck = box(0.05, 0.62, 0.025, M.wood);
-  neck.position.y = 0.95;
-  const head = box(0.08, 0.17, 0.02, M.wood);
-  head.position.y = 1.34;
-  gt.add(lower, upper, guard, neck, head);
-  gt.position.set(0, 0.05, 0);
+  const extrude = (shape, depth, material) => {
+    const geo = new THREE.ExtrudeGeometry(shape, { depth, bevelEnabled: true, bevelSize: 0.006, bevelThickness: 0.006, bevelSegments: 2, curveSegments: 16 });
+    const m = new THREE.Mesh(geo, material);
+    m.castShadow = true;
+    return m;
+  };
+  // Corps double pan coupé
+  const b = new THREE.Shape();
+  b.moveTo(0, -0.22);
+  b.bezierCurveTo(0.1, -0.23, 0.17, -0.18, 0.165, -0.08);
+  b.bezierCurveTo(0.16, 0.0, 0.12, 0.0, 0.12, 0.03);
+  b.bezierCurveTo(0.12, 0.08, 0.15, 0.15, 0.13, 0.2);
+  b.bezierCurveTo(0.11, 0.23, 0.06, 0.16, 0.035, 0.12);
+  b.lineTo(-0.035, 0.12);
+  b.bezierCurveTo(-0.06, 0.2, -0.08, 0.27, -0.11, 0.26);
+  b.bezierCurveTo(-0.14, 0.25, -0.13, 0.1, -0.12, 0.05);
+  b.bezierCurveTo(-0.11, 0.0, -0.17, -0.02, -0.165, -0.08);
+  b.bezierCurveTo(-0.17, -0.18, -0.1, -0.23, 0, -0.22);
+  const body = extrude(b, 0.04, M.sunburst);
+  body.position.z = -0.02;
+  gt.add(body);
+  // Pickguard blanc
+  const pg = new THREE.Shape();
+  pg.moveTo(-0.03, 0.13);
+  pg.bezierCurveTo(-0.09, 0.12, -0.12, 0.02, -0.09, -0.06);
+  pg.bezierCurveTo(-0.06, -0.14, 0.0, -0.13, 0.03, -0.1);
+  pg.bezierCurveTo(0.08, -0.05, 0.09, 0.02, 0.06, 0.06);
+  pg.lineTo(0.03, 0.13);
+  pg.lineTo(-0.03, 0.13);
+  const guard = extrude(pg, 0.003, mat(0xf4f1ea, { roughness: 0.4 }));
+  guard.position.z = 0.026;
+  gt.add(guard);
+  // 3 micros simple bobinage + chevalet
+  for (const [y, r] of [[0.07, 0], [0.0, 0], [-0.06, 0.15]]) {
+    const pu = box(0.075, 0.018, 0.01, mat(0xf4f1ea, { roughness: 0.3 }));
+    pu.position.set(0, y, 0.034);
+    pu.rotation.z = r;
+    gt.add(pu);
+  }
+  const bridge = box(0.075, 0.03, 0.008, M.alu);
+  bridge.position.set(0, -0.12, 0.03);
+  gt.add(bridge);
+  for (const [x, y] of [[0.075, -0.12], [0.09, -0.16]]) {
+    const knob = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.015, 12), mat(0xf4f1ea));
+    knob.rotation.x = Math.PI / 2;
+    knob.position.set(x, y, 0.035);
+    gt.add(knob);
+  }
+  // Manche, touche, tête
+  const neck = box(0.048, 0.56, 0.022, M.wood);
+  neck.position.set(0, 0.39, 0.012);
+  const board = box(0.046, 0.56, 0.004, mat(0x3b2416));
+  board.position.set(0, 0.39, 0.025);
+  const head = new THREE.Shape();
+  head.moveTo(-0.024, 0);
+  head.lineTo(0.024, 0);
+  head.bezierCurveTo(0.03, 0.08, 0.05, 0.14, 0.04, 0.19);
+  head.bezierCurveTo(0.02, 0.2, -0.01, 0.2, -0.024, 0.17);
+  head.lineTo(-0.024, 0);
+  const hs = extrude(head, 0.012, M.wood);
+  hs.position.set(0, 0.67, 0.002);
+  gt.add(neck, board, hs);
+  for (let i = 0; i < 6; i++) {
+    const t = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.006, 0.02, 8), M.alu);
+    t.rotation.x = Math.PI / 2;
+    t.position.set(-0.014 + i * 0.006, 0.7 + i * 0.025, 0.02);
+    gt.add(t);
+  }
+  // Posée dans le stand, légèrement inclinée vers l'arrière
+  gt.position.set(0, 0.5, 0.03);
   gt.rotation.x = -0.12;
-  gt.traverse((o) => (o.castShadow = true));
   g.add(gt);
   return g;
 }
@@ -272,25 +333,25 @@ function init(root) {
   aud.position.set(0, 0, 2.45);
   scene.add(aud);
 
-  const place = (obj, { x, z }, text, y, cls) => {
+  const place = (obj, { x, z, rot = 0, labelDx = 0, labelDz = 0 }, text, y, cls) => {
     obj.position.set(x, 0, z);
+    obj.rotation.y = rot;
     scene.add(obj);
     if (text) {
       const l = label(text, cls);
-      l.position.set(x, y, z);
+      l.position.set(x + labelDx, y, z + labelDz);
       scene.add(l);
     }
     return obj;
   };
 
-  const fc1 = place(flightcase(LAYOUT.flightcase1), LAYOUT.flightcase1, T.fc1, 1.45);
+  const fc1 = place(flightcase(LAYOUT.flightcase1), LAYOUT.flightcase1, T.fc1, 1.3);
   const fc2 = place(flightcase(LAYOUT.flightcase2), LAYOUT.flightcase2, T.fc2, 1.3);
   const lap = laptop();
-  lap.position.set(-0.3, fc1.userData.top, -0.05);
+  lap.position.set(0.25, fc1.userData.top, 0); // bout du flightcase côté musicien
   fc1.add(lap);
   const c1 = controller(0.5, 0.22);
-  c1.position.set(0.22, fc1.userData.top, 0.08);
-  c1.rotation.y = -0.15;
+  c1.position.set(-0.22, fc1.userData.top, 0.02);
   fc1.add(c1);
   const c2 = controller(0.44, 0.26);
   c2.position.set(0, fc2.userData.top, 0.05);
@@ -303,7 +364,7 @@ function init(root) {
   di.position.y = 0.035;
   const diG = new THREE.Group();
   diG.add(di);
-  place(diG, LAYOUT.di, T.di, 0.4);
+  place(diG, LAYOUT.di, T.di, 0.3);
 
   const pw = new THREE.Group();
   const strip = box(0.45, 0.045, 0.07, M.gear);
@@ -314,7 +375,6 @@ function init(root) {
     s.position.set(-0.15 + i * 0.1, 0.048, 0);
     pw.add(s);
   }
-  pw.rotation.y = 0.5;
   place(pw, LAYOUT.power); // étiquette commune avec la DI
 
   // Les deux retours sont légèrement tournés vers le musicien
