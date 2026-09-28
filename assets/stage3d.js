@@ -5,15 +5,16 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
 
 // rot = rotation en radians (Math.PI / 2 = quart de tour).
-// Les 2 flightcases forment un L : le n°2 face au public, le n°1 en coude sur le côté du musicien.
+// Les 2 flightcases forment un L : le n°2 face au public, le n°1 en coude sur le côté du musicien,
+// avec ~40 cm d'écart entre les deux pour qu'Andreï puisse atteindre le matériel du n°1.
 const LAYOUT = {
-  flightcase1: { x: -0.4, z: -0.25, rot: Math.PI / 2, w: 1.1, h: 1.0, d: 0.6, labelDx: -0.35, labelDz: -0.35 },
-  flightcase2: { x: 0.25, z: 0, w: 0.7, h: 1.0, d: 0.6 },
-  musician: { x: 0.2, z: -0.72 },
-  guitar: { x: 1.2, z: -0.45, rot: -0.35 },
-  di: { x: -1.3, z: -0.6 },
-  power: { x: -1.2, z: -0.05, rot: Math.PI / 2 },
-  wedge1: { x: -1.2, z: 1.35 },
+  flightcase1: { x: -0.75, z: -0.15, rot: Math.PI / 2, w: 1.1, h: 1.0, d: 0.6 },
+  flightcase2: { x: 0.3, z: 0.35, w: 0.7, h: 1.0, d: 0.6 },
+  musician: { x: 0.1, z: -0.35 },
+  guitar: { x: 1.25, z: -0.35, rot: -0.35 },
+  di: { x: -1.5, z: 0.45 },
+  power: { x: -1.45, z: -0.1, rot: Math.PI / 2 },
+  wedge1: { x: -1.2, z: 1.6 },
   wedge2: { x: 1.55, z: 1.25 },
 };
 
@@ -68,7 +69,7 @@ const M = {
   floor: mat(0x1c1c1e, { roughness: 0.95 }),
   case: mat(0x151515, { roughness: 0.5 }),
   alu: mat(0xb9bcc2, { metalness: 0.8, roughness: 0.35 }),
-  body: mat(0x0b0b0b, { roughness: 0.9 }),
+  body: mat(0x8a93a3, { roughness: 0.6, emissive: 0x1c2029 }), // gris clair : lisible sur le plateau sombre
   gear: mat(0x2a2a2e, { roughness: 0.4 }),
   screen: mat(0xcfd3d8, { metalness: 0.6, roughness: 0.3 }),
   di: mat(0x3e6f7a, { metalness: 0.4, roughness: 0.4 }),
