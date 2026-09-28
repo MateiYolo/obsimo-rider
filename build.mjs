@@ -91,7 +91,10 @@ function page({ lang, meta, body, date }) {
 <body>
 <nav class="bar">
   <div class="langs">${switcher}</div>
-  <a class="dl" href="../obsimo-rider-${lang}.pdf" download>↓ ${esc(meta.download)}</a>
+  <div class="actions">
+    ${meta.spotify ? `<a class="listen" href="${esc(meta.spotify)}" target="_blank" rel="noopener">▶ ${esc(meta.listen || 'Spotify')}</a>` : ''}
+    <a class="dl" href="../obsimo-rider-${lang}.pdf" download>↓ ${esc(meta.download)}</a>
+  </div>
 </nav>
 <main>
   <header class="cover">

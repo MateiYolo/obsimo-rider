@@ -3,6 +3,8 @@ lang: en
 title: Rider 2026 Live
 techTitle: Technical sheet 2026 — live
 download: Download PDF
+listen: Listen
+spotify: https://open.spotify.com/intl-fr/artist/3zHiZOMFJFL3GjWwsmYEJy?si=f-dirFFrQY68ggOjS5qdoQ
 updated: Updated
 ---
 
@@ -13,7 +15,7 @@ If you need any further information or adjustments, please contact us directly b
 ## Contacts
 
 - **Musician** — Andreï · [+33 6 89 81 89 00](tel:+33689818900) · [obsimomusic@gmail.com](mailto:obsimomusic@gmail.com)
-- **Manager** — Pavel · [+33 6 74 36 22 88](tel:+33674362288) · [pavel.ecran@gmail.com](mailto:pavel.ecran@gmail.com)
+- **Tour manager** — Matei · [+33 6 51 29 55 82](tel:+33651295582) · [matei.convard@gmail.com](mailto:matei.convard@gmail.com)
 
 ## Team
 
@@ -47,6 +49,8 @@ If the OBSIMO team travels by train or plane, please contact us to arrange trans
 No allergies.
 
 ## Merchandising
+
+The merch is mainly **vinyl records and goodies**.
 
 Please provide a space of **at least 2 m²** accessible to the public, with tables, chairs, lighting and power outlets.
 
