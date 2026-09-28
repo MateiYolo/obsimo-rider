@@ -58,7 +58,10 @@ async function launchBrowser() {
     const { default: sparticuz } = await import('@sparticuz/chromium');
     return chromium.launch({ executablePath: await sparticuz.executablePath(), args: sparticuz.args });
   }
-  return chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
+  return chromium.launch({
+    ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}),
+    args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'], // WebGL logiciel pour la capture 3D
+  });
 }
 
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
@@ -137,7 +140,7 @@ writeFileSync(`${DIST}/index.html`, `<!doctype html>
 if (withPdf) {
   const { createServer } = await import('node:http');
   const { extname, join } = await import('node:path');
-  const types = { '.html': 'text/html', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
+  const types = { '.html': 'text/html', '.css': 'text/css', '.js': 'text/javascript', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
   const server = createServer((req, res) => {
     let p = join(DIST, decodeURIComponent(req.url.split('?')[0]));
     if (p.endsWith('/')) p += 'index.html';
@@ -150,9 +153,30 @@ if (withPdf) {
   }).listen(0);
   const port = server.address().port;
   const browser = await launchBrowser();
-  const pg = await browser.newPage();
+  const pg = await browser.newPage({ viewport: { width: 1100, height: 900 }, deviceScaleFactor: 2 });
   for (const lang of langs) {
     await pg.goto(`http://localhost:${port}/${lang}/`, { waitUntil: 'networkidle' });
+
+    // Capture de la scène 3D (avec les étiquettes dans la bonne langue) pour remplacer
+    // l'ancien visuel dans le PDF. Si WebGL n'est pas dispo, on garde stage-plot.jpg.
+    try {
+      const stage = pg.locator('.stage3d[data-ready="1"]');
+      await stage.waitFor({ timeout: 15000 });
+      await stage.evaluate((el) => el.classList.add('capture'));
+      await stage.scrollIntoViewIfNeeded();
+      await pg.waitForTimeout(1500); // quelques frames de rendu
+      const shot = `assets/stage-plot-3d-${lang}.png`;
+      await stage.screenshot({ path: `${DIST}/${shot}` });
+      await pg.evaluate(async (src) => {
+        const img = document.querySelector('.stage-fallback');
+        img.src = `../${src}`;
+        await img.decode();
+      }, shot);
+      console.log(`Capture 3D ${lang} ✓`);
+    } catch (err) {
+      console.warn(`Capture 3D ${lang} impossible, image d'origine gardée dans le PDF (${err.message.split('\n')[0]})`);
+    }
+
     await pg.pdf({
       path: `${DIST}/obsimo-rider-${lang}.pdf`,
       format: 'A4',

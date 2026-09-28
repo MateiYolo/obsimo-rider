@@ -66,11 +66,13 @@ function hasWebGL() {
 
 const mat = (color, opts = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.7, metalness: 0.1, ...opts });
 const M = {
-  floor: mat(0x1c1c1e, { roughness: 0.95 }),
+  floor: mat(0x6e7075, { roughness: 0.95 }), // gris moyen : fait ressortir flightcases et retours
   case: mat(0x151515, { roughness: 0.5 }),
   alu: mat(0xb9bcc2, { metalness: 0.8, roughness: 0.35 }),
   body: mat(0x8a93a3, { roughness: 0.6, emissive: 0x1c2029 }), // gris clair : lisible sur le plateau sombre
   gear: mat(0x2a2a2e, { roughness: 0.4 }),
+  wedge: mat(0x34373e, { roughness: 0.6 }),
+  grille: mat(0x8d939e, { roughness: 0.8, metalness: 0.3 }),
   screen: mat(0xcfd3d8, { metalness: 0.6, roughness: 0.3 }),
   di: mat(0x3e6f7a, { metalness: 0.4, roughness: 0.4 }),
   sunburst: mat(0xb5561c, { roughness: 0.35 }),
@@ -250,8 +252,13 @@ function wedge() {
   s.lineTo(0, 0);
   const geo = new THREE.ExtrudeGeometry(s, { depth: 0.58, bevelEnabled: true, bevelSize: 0.012, bevelThickness: 0.012, bevelSegments: 2 });
   geo.translate(-0.225, 0, -0.29);
-  const m = new THREE.Mesh(geo, M.gear);
+  const m = new THREE.Mesh(geo, M.wedge);
   m.castShadow = m.receiveShadow = true;
+  // Grille HP claire sur la face inclinée, pour identifier le retour d'un coup d'œil
+  const grille = box(0.4, 0.006, 0.5, M.grille);
+  grille.rotation.z = -Math.atan2(0.26, 0.35);
+  grille.position.set(0.05 + 0.6 * 0.006, 0.25 + 0.8 * 0.006, 0);
+  m.add(grille);
   m.rotation.y = Math.PI / 2; // la face HP regarde vers l'arrière-scène (le musicien)
   const g = new THREE.Group();
   g.add(m);
@@ -445,6 +452,7 @@ function init(root) {
   });
 
   root.closest('.stage')?.classList.add('has3d');
+  root.dataset.ready = '1';
 }
 
 const root = document.querySelector('.stage3d');
