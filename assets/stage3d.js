@@ -3,6 +3,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { CSS2DRenderer, CSS2DObject } from 'three/addons/renderers/CSS2DRenderer.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 // rot = rotation en radians (Math.PI / 2 = quart de tour).
 // Les 2 flightcases forment un L : le n°2 face au public, le n°1 en coude sur le côté du musicien,
@@ -144,6 +145,32 @@ function musician() {
   add(new THREE.SphereGeometry(0.12, 16, 12), 0, 1.6, 0); // tête
   for (const s of [-1, 1]) add(new THREE.CapsuleGeometry(0.055, 0.62, 4, 8), s * 0.36, 1.62, 0, -s * 0.55); // bras levés
   return g;
+}
+
+// Modèle 3D d'Andreï (généré depuis une photo). Si le chargement échoue, on garde le bonhomme stylisé.
+const AVATAR = { url: new URL('obsimo.glb', import.meta.url).href, height: 1.78, rot: 0 };
+
+function loadAvatar() {
+  return new GLTFLoader().loadAsync(AVATAR.url).then(({ scene: model }) => {
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    model.scale.setScalar(AVATAR.height / size.y);
+    box.setFromObject(model);
+    const c = box.getCenter(new THREE.Vector3());
+    model.position.set(-c.x, -box.min.y, -c.z); // pieds au sol, centré
+    model.traverse((o) => {
+      if (!o.isMesh) return;
+      o.castShadow = true;
+      // Vêtements sombres : un peu d'auto-éclairage pour rester lisible sur le plateau
+      o.material.emissive = new THREE.Color(0xffffff);
+      o.material.emissiveMap = o.material.map;
+      o.material.emissiveIntensity = 0.35;
+    });
+    const g = new THREE.Group();
+    g.rotation.y = AVATAR.rot;
+    g.add(model);
+    return g;
+  });
 }
 
 function guitar() {
@@ -365,7 +392,13 @@ function init(root) {
   c2.position.set(0, fc2.userData.top, 0.05);
   fc2.add(c2);
 
-  place(musician(), LAYOUT.musician, T.musician, 2.25, 's3-strong');
+  const fallback = place(musician(), LAYOUT.musician, T.musician, 2.25, 's3-strong');
+  const avatar = loadAvatar()
+    .then((g) => {
+      fallback.clear();
+      fallback.add(g);
+    })
+    .catch((err) => console.warn('Avatar 3D non chargé, bonhomme stylisé gardé', err));
   place(guitar(), LAYOUT.guitar, T.guitar, 1.6);
 
   const di = box(0.22, 0.07, 0.12, M.di);
@@ -452,7 +485,7 @@ function init(root) {
   });
 
   root.closest('.stage')?.classList.add('has3d');
-  root.dataset.ready = '1';
+  avatar.finally(() => (root.dataset.ready = '1')); // la capture PDF attend l'avatar
 }
 
 const root = document.querySelector('.stage3d');

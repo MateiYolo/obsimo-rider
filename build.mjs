@@ -17,7 +17,7 @@ rmSync(DIST, { recursive: true, force: true });
 mkdirSync(DIST);
 cpSync('assets', `${DIST}/assets`, { recursive: true });
 // three.js embarqué (pas de dépendance à un CDN) : seulement les fichiers utilisés par stage3d.js
-for (const f of ['build/three.module.js', 'examples/jsm/controls/OrbitControls.js', 'examples/jsm/renderers/CSS2DRenderer.js']) {
+for (const f of ['build/three.module.js', 'examples/jsm/controls/OrbitControls.js', 'examples/jsm/renderers/CSS2DRenderer.js', 'examples/jsm/loaders/GLTFLoader.js', 'examples/jsm/utils/BufferGeometryUtils.js']) {
   cpSync(`node_modules/three/${f}`, `${DIST}/vendor/three/${f}`);
 }
 
