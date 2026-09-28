@@ -51,6 +51,10 @@ function lastUpdated(file) {
 async function launchBrowser() {
   const { chromium } = await import('playwright-core');
   if (process.env.VERCEL) {
+    // Le build Vercel tourne sur Amazon Linux 2023, comme AWS Lambda : on le dit à
+    // @sparticuz/chromium pour qu'il décompresse ses librairies système (libnss3…) et
+    // règle LD_LIBRARY_PATH. Doit être fait AVANT l'import.
+    process.env.AWS_LAMBDA_JS_RUNTIME ??= 'nodejs22.x';
     const { default: sparticuz } = await import('@sparticuz/chromium');
     return chromium.launch({ executablePath: await sparticuz.executablePath(), args: sparticuz.args });
   }
